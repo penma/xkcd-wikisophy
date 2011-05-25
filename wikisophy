@@ -7,18 +7,8 @@ use Text::Balanced qw(extract_bracketed);
 
 my $pagename = $ARGV[0];
 
-while (1) {
+while (lc($pagename) ne "philosophy") {
 	print "-> $pagename\n";
-
-	if(lc($pagename) eq "philosophy") {
-		print "  QED\n";
-		last;
-	}
-
-	if (lc($pagename) ~~ ["physics", "mathematics", "science"]) {
-		print "  QED (terminated early)\n";
-		last;
-	}
 
 	my $c = get("https://secure.wikimedia.org/wikipedia/en/wiki/$pagename?action=raw");
 
@@ -51,3 +41,5 @@ while (1) {
 	} 
 }
 
+print "-> $pagename\n";
+print "QED\n";
