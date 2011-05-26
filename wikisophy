@@ -2,15 +2,26 @@
 use strict;
 use warnings;
 
-use LWP::Simple;
+use LWP::UserAgent;
 use Text::Balanced qw(extract_bracketed);
 
 my $pagename = $ARGV[0];
 
+my $ua = LWP::UserAgent->new;
+$ua->timeout(10);
+$ua->env_proxy;
+
 while (lc($pagename) ne "philosophy") {
 	print "-> $pagename\n";
 
-	my $c = get("https://secure.wikimedia.org/wikipedia/en/wiki/$pagename?action=raw");
+    my $response = $ua->get("https://secure.wikimedia.org/wikipedia/en/wiki/$pagename?action=raw");
+
+    if (! $response->is_success)
+    {
+        die $response->status_line;
+    }
+
+    my $c = $response->decoded_content;
 
 	wikiparse: while (length($c)) {
 		if (defined($ARGV[1]) and $ARGV[1] eq "debug") {
