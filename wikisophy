@@ -18,23 +18,22 @@ $ua->env_proxy;
 my $num_encountered = 0;
 my %encountered;
 
-sub was_encountered
-{
-    return $encountered{lc($pagename)};
+sub was_encountered {
+	return $encountered{lc($pagename)};
 }
 
 while (lc($pagename) ne "philosophy" && (!was_encountered())) {
-    $encountered{lc($pagename)} = $num_encountered++;
+	$encountered{lc($pagename)} = $num_encountered++;
 
 	print "-> $pagename\n";
 
-    my $response = $ua->get("https://secure.wikimedia.org/wikipedia/en/wiki/$pagename?action=raw");
+	my $response = $ua->get("https://secure.wikimedia.org/wikipedia/en/wiki/$pagename?action=raw");
 
-    if (! $response->is_success) {
-        die $response->status_line;
-    }
+	if (! $response->is_success) {
+		die $response->status_line;
+	}
 
-    my $c = $response->decoded_content;
+	my $c = $response->decoded_content;
 
 	wikiparse: while (length($c)) {
 		if ($is_debug) {
@@ -65,12 +64,10 @@ while (lc($pagename) ne "philosophy" && (!was_encountered())) {
 	} 
 }
 
-if (was_encountered())
-{
-    print "Other infinite loop!!\n";
+print "-> $pagename\n";
+if (was_encountered()) {
+	print "Other infinite loop!!\n";
 }
-else
-{
-    print "-> $pagename\n";
-    print "QED\n";
+else {
+	print "QED\n";
 }
