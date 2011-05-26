@@ -15,7 +15,17 @@ my $ua = LWP::UserAgent->new;
 $ua->timeout(10);
 $ua->env_proxy;
 
-while (lc($pagename) ne "philosophy") {
+my $num_encountered = 0;
+my %encountered;
+
+sub was_encountered
+{
+    return $encountered{lc($pagename)};
+}
+
+while (lc($pagename) ne "philosophy" && (!was_encountered())) {
+    $encountered{lc($pagename)} = $num_encountered++;
+
 	print "-> $pagename\n";
 
     my $response = $ua->get("https://secure.wikimedia.org/wikipedia/en/wiki/$pagename?action=raw");
@@ -55,5 +65,12 @@ while (lc($pagename) ne "philosophy") {
 	} 
 }
 
-print "-> $pagename\n";
-print "QED\n";
+if (was_encountered())
+{
+    print "Other infinite loop!!\n";
+}
+else
+{
+    print "-> $pagename\n";
+    print "QED\n";
+}
