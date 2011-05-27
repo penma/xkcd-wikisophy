@@ -7,11 +7,12 @@ use Getopt::Long;
 use LWP::UserAgent;
 use Text::Balanced qw(extract_bracketed);
 
-my $is_debug;
+my ($is_debug, $cache_file);
 my $target = "philosophy";
 
 GetOptions(
 	"debug" => \$is_debug,
+	"cache=s" => \$cache_file,
 	"target=s" => \$target,
 );
 
@@ -22,14 +23,30 @@ $ua->timeout(10);
 $ua->env_proxy;
 
 my $num_encountered = 0;
-my %encountered;
+my (%encountered, %cached);
 
 sub was_encountered {
 	return $encountered{lc($pagename)};
 }
 
+if ($cache_file and open my $cache, '<', $cache_file) {
+	while (<$cache>) {
+		chomp;
+		if (m/^([^#]+)#(.*)$/) {
+			$cached{$1} = $2;
+		}
+	}
+}
+
 while (lc($pagename) ne $target && (!was_encountered())) {
 	$encountered{lc($pagename)} = $num_encountered++;
+
+	if ($cached{lc($pagename)})
+	{
+		print "-* $pagename\n";
+		$pagename = $cached{lc($pagename)};
+		next;
+	}
 
 	print "-> $pagename\n";
 
@@ -52,16 +69,19 @@ while (lc($pagename) ne $target && (!was_encountered())) {
 
 		if ($c =~ /^[^{(]+\[\[/s) {
 			$c =~ s/^[^\[]+//s;
-			($pagename, $c) = extract_bracketed($c);
+			(my $new_pagename, $c) = extract_bracketed($c);
 
-			$pagename =~ s/^\[\[//;
-			$pagename =~ s/\]\]$//;
-			$pagename =~ s/\|.*//;
-			$pagename =~ s/#.*$//;
+			$new_pagename =~ s/^\[\[//;
+			$new_pagename =~ s/\]\]$//;
+			$new_pagename =~ s/\|.*//;
+			$new_pagename =~ s/#.*$//;
 
-			if ($pagename =~ /:/) {
+			if ($new_pagename =~ /:/) {
 				next wikiparse;
 			}
+
+			$cached{lc $pagename} = $new_pagename;
+			$pagename = $new_pagename;
 
 			last wikiparse;
 		} else {
@@ -78,4 +98,12 @@ if (was_encountered()) {
 }
 else {
 	print "QED\n";
+}
+
+if ($cache_file) {
+	open my $cache, '>', $cache_file or die "Unable to open $cache_file: $!";
+
+	for (keys %cached) {
+		print $cache "$_#$cached{$_}\n";
+	}
 }
