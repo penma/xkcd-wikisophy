@@ -9,7 +9,7 @@ use Text::Balanced qw(extract_bracketed);
 use URI;
 
 my ($is_debug, $cache_file);
-my $target = "philosophy";
+my $target = "Philosophy";
 
 GetOptions(
 	"debug" => \$is_debug,
@@ -66,12 +66,12 @@ sub process_page {
 	my %encountered;
 	my $num_encountered = 0;
 
-	while (lc($pagename) ne $target && !$encountered{lc($pagename)}) {
-		$encountered{lc($pagename)} = $num_encountered++;
+	while (ucfirst($pagename) ne $target && !$encountered{ucfirst($pagename)}) {
+		$encountered{ucfirst($pagename)} = $num_encountered++;
 
-		if ($cached{lc($pagename)}) {
+		if ($cached{ucfirst($pagename)}) {
 			print "-* $pagename\n";
-			$pagename = $cached{lc($pagename)};
+			$pagename = $cached{ucfirst($pagename)};
 			next;
 		}
 
@@ -87,13 +87,13 @@ sub process_page {
 
 		my $new_pagename = parse_page($response->decoded_content);
 
-		$cached{lc($pagename)} = $new_pagename;
+		$cached{ucfirst($pagename)} = $new_pagename;
 		$pagename = $new_pagename;
 	}
 
 	print "-> $pagename\n";
 
-	if ($encountered{lc($pagename)}) {
+	if ($encountered{ucfirst($pagename)}) {
 		print "$original_pagename: quo errat demonstrator ($num_encountered)\n";
 	} else {
 		print "$original_pagename: q.e.d. ($num_encountered)\n";
