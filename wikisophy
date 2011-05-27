@@ -16,18 +16,11 @@ GetOptions(
 	"target=s" => \$target,
 );
 
-my $pagename = shift(@ARGV);
-
 my $ua = LWP::UserAgent->new;
 $ua->timeout(10);
 $ua->env_proxy;
 
-my $num_encountered = 0;
-my (%encountered, %cached);
-
-sub was_encountered {
-	return $encountered{lc($pagename)};
-}
+my %cached;
 
 sub parse_page {
 	my ($c) = @_;
@@ -65,6 +58,45 @@ sub parse_page {
 	return $page_name;
 }
 
+sub process_page
+{
+	my ($pagename) = @_;
+
+	my %encountered;
+	my $num_encountered = 0;
+
+	while (lc($pagename) ne $target && !$encountered{$pagename}) {
+		$encountered{lc($pagename)} = $num_encountered++;
+
+		if ($cached{lc($pagename)}) {
+			print "-* $pagename\n";
+			$pagename = $cached{lc($pagename)};
+			next;
+		}
+
+		print "-> $pagename\n";
+
+		my $response = $ua->get("https://secure.wikimedia.org/wikipedia/en/wiki/$pagename?action=raw");
+
+		if (! $response->is_success) {
+			die $response->status_line;
+		}
+
+		my $new_pagename = parse_page($response->decoded_content);
+
+		$cached{lc $pagename} = $new_pagename;
+		$pagename = $new_pagename;
+	}
+
+	print "-> $pagename\n";
+
+	if ($encountered{$pagename}) {
+		print "Other infinite loop!!\n";
+	}
+	else {
+		print "QED\n";
+	}
+}
 
 if ($cache_file and open my $cache, '<', $cache_file) {
 	while (<$cache>) {
@@ -75,37 +107,8 @@ if ($cache_file and open my $cache, '<', $cache_file) {
 	}
 }
 
-while (lc($pagename) ne $target && (!was_encountered())) {
-	$encountered{lc($pagename)} = $num_encountered++;
-
-	if ($cached{lc($pagename)})
-	{
-		print "-* $pagename\n";
-		$pagename = $cached{lc($pagename)};
-		next;
-	}
-
-	print "-> $pagename\n";
-
-	my $response = $ua->get("https://secure.wikimedia.org/wikipedia/en/wiki/$pagename?action=raw");
-
-	if (! $response->is_success) {
-		die $response->status_line;
-	}
-
-	my $new_pagename = parse_page($response->decoded_content);
-
-	$cached{lc $pagename} = $new_pagename;
-	$pagename = $new_pagename;
-}
-
-print "-> $pagename\n";
-
-if (was_encountered()) {
-	print "Other infinite loop!!\n";
-}
-else {
-	print "QED\n";
+for (@ARGV) {
+	process_page($_);
 }
 
 if ($cache_file) {
