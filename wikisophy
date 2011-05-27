@@ -59,9 +59,9 @@ sub parse_page {
 	return $page_name;
 }
 
-sub process_page
-{
+sub process_page {
 	my ($pagename) = @_;
+	my $original_pagename = $pagename;
 
 	my %encountered;
 	my $num_encountered = 0;
@@ -94,9 +94,9 @@ sub process_page
 	print "-> $pagename\n";
 
 	if ($encountered{lc($pagename)}) {
-		print "Other infinite loop! ($num_encountered)\n";
+		print "$original_pagename: quo errat demonstrator ($num_encountered)\n";
 	} else {
-		print "QED ($num_encountered)\n";
+		print "$original_pagename: q.e.d. ($num_encountered)\n";
 	}
 }
 
