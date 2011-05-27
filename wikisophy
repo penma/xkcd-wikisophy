@@ -94,9 +94,9 @@ sub process_page
 	print "-> $pagename\n";
 
 	if ($encountered{lc($pagename)}) {
-		print "Other infinite loop!!\n";
+		print "Other infinite loop! ($num_encountered)\n";
 	} else {
-		print "QED\n";
+		print "QED ($num_encountered)\n";
 	}
 }
 
