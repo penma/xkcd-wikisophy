@@ -51,6 +51,7 @@ while (lc($pagename) ne "philosophy" && (!was_encountered())) {
 			$pagename =~ s/^\[\[//;
 			$pagename =~ s/\]\]$//;
 			$pagename =~ s/\|.*//;
+			$pagename =~ s/#.*$//;
 
 			if ($pagename =~ /:/) {
 				next wikiparse;
