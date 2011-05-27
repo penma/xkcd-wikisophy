@@ -33,12 +33,12 @@ sub parse_page {
 			print "*" x 80 . "\n\n";
 		}
 
-		$c =~ s/<ref>.*?<\/ref>//gs;
-		$c =~ s/'''?[^\n]'''?//s;
+		$c =~ s/<ref[^>]*>[^<]+<\/ref>//gs;
+		$c =~ s/'{2,}[^\n]+?'{2,}//gs;
 
 		if ($c =~ /^[^{(]+\[\[/s) {
 			$c =~ s/^[^\[]+//s;
-			($page_name, $c) = extract_bracketed($c);
+			($page_name, $c) = extract_bracketed($c, "[");
 
 			$page_name =~ s/^\[\[//;
 			$page_name =~ s/\]\]$//;
@@ -52,7 +52,7 @@ sub parse_page {
 			last wikiparse;
 		} else {
 			$c =~ s/^[^{(]+//s;
-			(undef, $c) = extract_bracketed($c);
+			(undef, $c) = extract_bracketed($c, substr($c, 0, 1));
 		}
 	}
 
