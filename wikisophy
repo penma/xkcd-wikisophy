@@ -29,6 +29,43 @@ sub was_encountered {
 	return $encountered{lc($pagename)};
 }
 
+sub parse_page {
+	my ($c) = @_;
+	my $page_name;
+
+	wikiparse: while (length($c)) {
+		if ($is_debug) {
+			print $c;
+			print "*" x 80 . "\n\n";
+		}
+
+		$c =~ s/<ref>.*?<\/ref>//gs;
+		$c =~ s/'''?[^\n]'''?//s;
+
+		if ($c =~ /^[^{(]+\[\[/s) {
+			$c =~ s/^[^\[]+//s;
+			($page_name, $c) = extract_bracketed($c);
+
+			$page_name =~ s/^\[\[//;
+			$page_name =~ s/\]\]$//;
+			$page_name =~ s/\|.*//;
+			$page_name =~ s/#.*$//;
+
+			if ($page_name =~ /:/) {
+				next wikiparse;
+			}
+
+			last wikiparse;
+		} else {
+			$c =~ s/^[^{(]+//s;
+			(undef, $c) = extract_bracketed($c);
+		}
+	}
+
+	return $page_name;
+}
+
+
 if ($cache_file and open my $cache, '<', $cache_file) {
 	while (<$cache>) {
 		chomp;
@@ -56,39 +93,10 @@ while (lc($pagename) ne $target && (!was_encountered())) {
 		die $response->status_line;
 	}
 
-	my $c = $response->decoded_content;
+	my $new_pagename = parse_page($response->decoded_content);
 
-	wikiparse: while (length($c)) {
-		if ($is_debug) {
-			print $c;
-			print "*" x 80 . "\n\n";
-		}
-
-		$c =~ s/<ref>.*?<\/ref>//gs;
-		$c =~ s/'''?[^\n]'''?//s;
-
-		if ($c =~ /^[^{(]+\[\[/s) {
-			$c =~ s/^[^\[]+//s;
-			(my $new_pagename, $c) = extract_bracketed($c);
-
-			$new_pagename =~ s/^\[\[//;
-			$new_pagename =~ s/\]\]$//;
-			$new_pagename =~ s/\|.*//;
-			$new_pagename =~ s/#.*$//;
-
-			if ($new_pagename =~ /:/) {
-				next wikiparse;
-			}
-
-			$cached{lc $pagename} = $new_pagename;
-			$pagename = $new_pagename;
-
-			last wikiparse;
-		} else {
-			$c =~ s/^[^{(]+//s;
-			(undef, $c) = extract_bracketed($c);
-		}
-	} 
+	$cached{lc $pagename} = $new_pagename;
+	$pagename = $new_pagename;
 }
 
 print "-> $pagename\n";
