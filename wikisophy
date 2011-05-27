@@ -84,16 +84,15 @@ sub process_page
 
 		my $new_pagename = parse_page($response->decoded_content);
 
-		$cached{lc $pagename} = $new_pagename;
+		$cached{lc($pagename)} = $new_pagename;
 		$pagename = $new_pagename;
 	}
 
 	print "-> $pagename\n";
 
-	if ($encountered{$pagename}) {
+	if ($encountered{lc($pagename)}) {
 		print "Other infinite loop!!\n";
-	}
-	else {
+	} else {
 		print "QED\n";
 	}
 }
