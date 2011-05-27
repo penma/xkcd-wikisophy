@@ -1,0 +1,14 @@
+#!/usr/bin/env perl
+
+print "digraph Wikisophy {\n";
+
+while (<>) {
+	s/^/\t"/;
+	s/#/" -> "/;
+	s/$/";/;
+	y/A-Z_/a-z /;
+
+	print;
+}
+
+print "}\n";
