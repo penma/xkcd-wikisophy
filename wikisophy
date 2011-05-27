@@ -3,13 +3,19 @@
 use strict;
 use warnings;
 
+use Getopt::Long;
 use LWP::UserAgent;
 use Text::Balanced qw(extract_bracketed);
 
-my $pagename = shift(@ARGV);
-my $mode = shift(@ARGV) || '';
+my $is_debug;
+my $target = "philosophy";
 
-my $is_debug = ($mode eq "debug");
+GetOptions(
+	"debug" => \$is_debug,
+	"target=s" => \$target,
+);
+
+my $pagename = shift(@ARGV);
 
 my $ua = LWP::UserAgent->new;
 $ua->timeout(10);
@@ -22,7 +28,7 @@ sub was_encountered {
 	return $encountered{lc($pagename)};
 }
 
-while (lc($pagename) ne "philosophy" && (!was_encountered())) {
+while (lc($pagename) ne $target && (!was_encountered())) {
 	$encountered{lc($pagename)} = $num_encountered++;
 
 	print "-> $pagename\n";
@@ -66,6 +72,7 @@ while (lc($pagename) ne "philosophy" && (!was_encountered())) {
 }
 
 print "-> $pagename\n";
+
 if (was_encountered()) {
 	print "Other infinite loop!!\n";
 }
