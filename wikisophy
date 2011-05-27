@@ -65,7 +65,7 @@ sub process_page
 	my %encountered;
 	my $num_encountered = 0;
 
-	while (lc($pagename) ne $target && !$encountered{$pagename}) {
+	while (lc($pagename) ne $target && !$encountered{lc($pagename)}) {
 		$encountered{lc($pagename)} = $num_encountered++;
 
 		if ($cached{lc($pagename)}) {
