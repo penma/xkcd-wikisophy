@@ -6,6 +6,7 @@ use warnings;
 use Getopt::Long;
 use LWP::UserAgent;
 use Text::Balanced qw(extract_bracketed);
+use URI;
 
 my ($is_debug, $cache_file);
 my $target = "philosophy";
@@ -76,7 +77,9 @@ sub process_page
 
 		print "-> $pagename\n";
 
-		my $response = $ua->get("https://secure.wikimedia.org/wikipedia/en/wiki/$pagename?action=raw");
+		my $uri = URI->new("https://secure.wikimedia.org/wikipedia/en/w/index.php");
+		$uri->query_form(action => "raw", title => $pagename);
+		my $response = $ua->get($uri->as_string);
 
 		if (! $response->is_success) {
 			die $response->status_line;
