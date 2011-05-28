@@ -11,12 +11,14 @@ use URI;
 binmode(STDOUT, ':utf8');
 
 my ($is_debug, $cache_file);
+my $lang = "en";
 my $target = "Philosophy";
 
 GetOptions(
 	"debug" => \$is_debug,
 	"cache=s" => \$cache_file,
 	"target=s" => \$target,
+	"language=s" => \$lang,
 );
 
 my $ua = LWP::UserAgent->new;
@@ -79,7 +81,7 @@ sub process_page {
 
 		print "-> $pagename\n";
 
-		my $uri = URI->new("https://secure.wikimedia.org/wikipedia/en/w/index.php");
+		my $uri = URI->new("https://secure.wikimedia.org/wikipedia/$lang/w/index.php");
 		$uri->query_form(action => "raw", title => $pagename);
 		my $response = $ua->get($uri->as_string);
 
