@@ -32,6 +32,27 @@ $ua->env_proxy;
 
 my %cached;
 
+if (defined $cache_file and open my $cache, '<:encoding(UTF-8)', $cache_file) {
+	while (<$cache>) {
+		chomp;
+		if (m/^([^#]+)#(.*)$/) {
+			$cached{$1} = $2;
+		}
+	}
+}
+
+for (@ARGV) {
+	process_page($_);
+}
+
+if (defined $cache_file) {
+	open my $cache, '>:utf8', $cache_file or die "Unable to open $cache_file: $!";
+
+	for (keys %cached) {
+		print $cache "$_#$cached{$_}\n";
+	}
+}
+
 sub parse_page {
 	my ($c) = @_;
 	my $page_name;
@@ -106,26 +127,5 @@ sub process_page {
 		print "$original_pagename: quo errat demonstrator ($num_encountered)\n";
 	} else {
 		print "$original_pagename: q.e.d. ($num_encountered)\n";
-	}
-}
-
-if (defined $cache_file and open my $cache, '<:encoding(UTF-8)', $cache_file) {
-	while (<$cache>) {
-		chomp;
-		if (m/^([^#]+)#(.*)$/) {
-			$cached{$1} = $2;
-		}
-	}
-}
-
-for (@ARGV) {
-	process_page($_);
-}
-
-if (defined $cache_file) {
-	open my $cache, '>:utf8', $cache_file or die "Unable to open $cache_file: $!";
-
-	for (keys %cached) {
-		print $cache "$_#$cached{$_}\n";
 	}
 }
