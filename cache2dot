@@ -1,12 +1,17 @@
 #!/usr/bin/env perl
 
+use open IN => ':encoding(UTF-8)';
+binmode STDIN, ':encoding(UTF-8)';
+binmode STDOUT, ':utf8';
+
 print "digraph Wikisophy {\n";
 
 while (<>) {
 	s/^/\t"/;
 	s/#/" -> "/;
 	s/$/";/;
-	y/A-Z_/a-z /;
+	y/_/ /;
+	$_ = lc;
 
 	print;
 }
