@@ -42,7 +42,7 @@ if (defined $cache_file and open my $cache, '<:encoding(UTF-8)', $cache_file) {
 }
 
 for (@ARGV) {
-	process_page($_);
+	process_page($_, \%cached);
 }
 
 if (defined $cache_file) {
@@ -90,7 +90,7 @@ sub parse_page {
 }
 
 sub process_page {
-	my ($pagename) = @_;
+	my ($pagename, $cache) = @_;
 	my $original_pagename = $pagename;
 
 	my %encountered;
@@ -99,9 +99,9 @@ sub process_page {
 	while (ucfirst($pagename) ne $target && !$encountered{ucfirst($pagename)}) {
 		$encountered{ucfirst($pagename)} = $num_encountered++;
 
-		if ($cached{ucfirst($pagename)}) {
+		if ($cache->{ucfirst($pagename)}) {
 			print "-* $pagename\n";
-			$pagename = $cached{ucfirst($pagename)};
+			$pagename = $cache->{ucfirst($pagename)};
 			next;
 		}
 
@@ -117,7 +117,7 @@ sub process_page {
 
 		my $new_pagename = parse_page($response->decoded_content);
 
-		$cached{ucfirst($pagename)} = $new_pagename;
+		$cache->{ucfirst($pagename)} = $new_pagename;
 		$pagename = $new_pagename;
 	}
 
