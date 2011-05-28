@@ -1,0 +1,23 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use open IN => ':encoding(UTF-8)';
+
+binmode STDIN, ':encoding(UTF-8)';
+binmode STDOUT, ':utf8';
+
+my (%parents, %children);
+
+while (<>) {
+	if (m/^([^#]+)#(.*)$/) {
+		$parents{ucfirst($1)} = 1;
+		$children{ucfirst($2)} = 1;
+	}
+}
+
+for (keys %parents) {
+	if (not $children{$_}) {
+		print "$_\n";
+	}
+}
