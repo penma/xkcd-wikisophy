@@ -14,6 +14,9 @@ my ($is_debug, $cache_file);
 my $lang = "en";
 my $target = "Philosophy";
 
+# This is needed in order to properly interpret UTF-8 arguments and options.
+utf8::decode($_) for @ARGV;
+
 GetOptions(
 	"debug" => \$is_debug,
 	"cache=s" => \$cache_file,
