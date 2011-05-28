@@ -109,7 +109,7 @@ sub process_page {
 	}
 }
 
-if ($cache_file and open my $cache, '<:encoding(UTF-8)', $cache_file) {
+if (defined $cache_file and open my $cache, '<:encoding(UTF-8)', $cache_file) {
 	while (<$cache>) {
 		chomp;
 		if (m/^([^#]+)#(.*)$/) {
@@ -122,7 +122,7 @@ for (@ARGV) {
 	process_page($_);
 }
 
-if ($cache_file) {
+if (defined $cache_file) {
 	open my $cache, '>:utf8', $cache_file or die "Unable to open $cache_file: $!";
 
 	for (keys %cached) {
