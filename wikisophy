@@ -59,6 +59,7 @@ sub parse_page {
 
 	$c =~ s/<ref[^>]*>[^<]+<\/ref>//gs;
 	$c =~ s/'{2,}[^\n]+?'{2,}//gs;
+	$c =~ s/<!--.*?-->//gs;
 
 	wikiparse: while (length($c)) {
 		if ($is_debug) {
