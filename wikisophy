@@ -24,6 +24,8 @@ GetOptions(
 	"language=s" => \$lang,
 );
 
+$target = ucfirst($target);
+
 my $ua = LWP::UserAgent->new;
 $ua->timeout(10);
 $ua->env_proxy;
