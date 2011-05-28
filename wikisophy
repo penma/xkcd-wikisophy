@@ -8,6 +8,8 @@ use LWP::UserAgent;
 use Text::Balanced qw(extract_bracketed);
 use URI;
 
+binmode(STDOUT, ':utf8');
+
 my ($is_debug, $cache_file);
 my $target = "Philosophy";
 
@@ -100,7 +102,7 @@ sub process_page {
 	}
 }
 
-if ($cache_file and open my $cache, '<', $cache_file) {
+if ($cache_file and open my $cache, '<:encoding(UTF-8)', $cache_file) {
 	while (<$cache>) {
 		chomp;
 		if (m/^([^#]+)#(.*)$/) {
@@ -114,7 +116,7 @@ for (@ARGV) {
 }
 
 if ($cache_file) {
-	open my $cache, '>', $cache_file or die "Unable to open $cache_file: $!";
+	open my $cache, '>:utf8', $cache_file or die "Unable to open $cache_file: $!";
 
 	for (keys %cached) {
 		print $cache "$_#$cached{$_}\n";
