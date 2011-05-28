@@ -5,6 +5,7 @@ binmode STDIN, ':encoding(UTF-8)';
 binmode STDOUT, ':utf8';
 
 print "digraph Wikisophy {\n";
+print "\tnode [shape=box];\n";
 
 while (<>) {
 	s/^/\t"/;
