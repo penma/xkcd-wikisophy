@@ -8,20 +8,50 @@ use LWP::UserAgent;
 use Text::Balanced qw(extract_bracketed);
 use URI;
 
+binmode(STDOUT, ':utf8');
+
 my ($is_debug, $cache_file);
+my $lang = "en";
 my $target = "Philosophy";
+
+# This is needed in order to properly interpret UTF-8 arguments and options.
+utf8::decode($_) for @ARGV;
 
 GetOptions(
 	"debug" => \$is_debug,
 	"cache=s" => \$cache_file,
 	"target=s" => \$target,
+	"language=s" => \$lang,
 );
+
+$target = ucfirst($target);
 
 my $ua = LWP::UserAgent->new;
 $ua->timeout(10);
 $ua->env_proxy;
 
 my %cached;
+
+if (defined $cache_file and open my $cache, '<:encoding(UTF-8)', $cache_file) {
+	while (<$cache>) {
+		chomp;
+		if (m/^([^#]+)#(.*)$/) {
+			$cached{$1} = $2;
+		}
+	}
+}
+
+for (@ARGV) {
+	process_page($_, \%cached);
+}
+
+if (defined $cache_file) {
+	open my $cache, '>:utf8', $cache_file or die "Unable to open $cache_file: $!";
+
+	for (keys %cached) {
+		print $cache "$_#$cached{$_}\n";
+	}
+}
 
 sub parse_page {
 	my ($c) = @_;
@@ -60,7 +90,7 @@ sub parse_page {
 }
 
 sub process_page {
-	my ($pagename) = @_;
+	my ($pagename, $cache) = @_;
 	my $original_pagename = $pagename;
 
 	my %encountered;
@@ -69,15 +99,15 @@ sub process_page {
 	while (ucfirst($pagename) ne $target && !$encountered{ucfirst($pagename)}) {
 		$encountered{ucfirst($pagename)} = $num_encountered++;
 
-		if ($cached{ucfirst($pagename)}) {
+		if ($cache->{ucfirst($pagename)}) {
 			print "-* $pagename\n";
-			$pagename = $cached{ucfirst($pagename)};
+			$pagename = $cache->{ucfirst($pagename)};
 			next;
 		}
 
 		print "-> $pagename\n";
 
-		my $uri = URI->new("https://secure.wikimedia.org/wikipedia/en/w/index.php");
+		my $uri = URI->new("https://secure.wikimedia.org/wikipedia/$lang/w/index.php");
 		$uri->query_form(action => "raw", title => $pagename);
 		my $response = $ua->get($uri->as_string);
 
@@ -87,7 +117,7 @@ sub process_page {
 
 		my $new_pagename = parse_page($response->decoded_content);
 
-		$cached{ucfirst($pagename)} = $new_pagename;
+		$cache->{ucfirst($pagename)} = $new_pagename;
 		$pagename = $new_pagename;
 	}
 
@@ -97,26 +127,5 @@ sub process_page {
 		print "$original_pagename: quo errat demonstrator ($num_encountered)\n";
 	} else {
 		print "$original_pagename: q.e.d. ($num_encountered)\n";
-	}
-}
-
-if ($cache_file and open my $cache, '<', $cache_file) {
-	while (<$cache>) {
-		chomp;
-		if (m/^([^#]+)#(.*)$/) {
-			$cached{$1} = $2;
-		}
-	}
-}
-
-for (@ARGV) {
-	process_page($_);
-}
-
-if ($cache_file) {
-	open my $cache, '>', $cache_file or die "Unable to open $cache_file: $!";
-
-	for (keys %cached) {
-		print $cache "$_#$cached{$_}\n";
 	}
 }
