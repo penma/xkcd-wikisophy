@@ -8,11 +8,8 @@ print "digraph Wikisophy {\n";
 print "\tnode [shape=box];\n";
 
 while (<>) {
-	s/^/\t"/;
-	s/#/" -> "/;
-	s/$/";/;
+	s/^([^#]+)#(.*)$/\t"\u$1" -> "\u$2";/;
 	y/_/ /;
-	$_ = lc;
 
 	print;
 }
