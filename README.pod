@@ -1,0 +1,12 @@
+=encoding utf8
+
+=head1 ABOUT
+
+Wikipedia trivia: if you take any article, click on the first link in the
+article text not in parentheses or italics, and then repeat, you will
+eventually end up at "Philosophy". (L<http://xkcd.com/903/>).
+
+The scripts in the repository aims to explore this phenomenon. The main
+one is C<wikisophy> .
+
+=cut
